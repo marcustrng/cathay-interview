@@ -1,0 +1,32 @@
+type: object
+properties:
+  date:
+    type: string
+    format: date-time
+    description: Timestamp of the rate data
+    example: "2025-03-26T23:59:59Z"
+  base_currency:
+    type: string
+    example: EUR
+  quote_currency:
+    type: string
+    example: USD
+  rates:
+    type: object
+    properties:
+      bid:
+        $ref: 'definitions.yaml#/components/schemas/OHLC'
+      ask:
+        $ref: 'definitions.yaml#/components/schemas/OHLC'
+      mid:
+        type: string
+        format: decimal
+        description: Mid-point rate
+        example: "1.07772"
+      spread:
+        type: string
+        format: decimal
+        description: Bid-ask spread
+        example: "0.00016"
+    required: [bid, ask, mid, spread]
+required: [date, base_currency, quote_currency, rates]

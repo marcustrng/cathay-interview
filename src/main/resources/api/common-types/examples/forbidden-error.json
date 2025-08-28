@@ -1,0 +1,13 @@
+{
+  "message": "Access to requested resource denied.",
+  "key" : "FORBIDDEN_ERROR",
+  "errors": [
+    {
+      "message": "Resource access denied due to an insufficient user quota of {quota}.",
+      "key": "common.api.quota",
+      "context": {
+        "quota": "someQuota"
+      }
+    }
+  ]
+}

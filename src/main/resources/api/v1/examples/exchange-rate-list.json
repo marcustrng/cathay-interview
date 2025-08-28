@@ -1,0 +1,24 @@
+[
+  {
+    "base_currency": "EUR",
+    "quote_currency": "USD",
+    "close_time": "2025-03-26T23:59:59Z",
+    "average_bid": "1.07764",
+    "average_ask": "1.07780",
+    "high_bid": "1.08020",
+    "high_ask": "1.08035",
+    "low_bid": "1.07322",
+    "low_ask": "1.07338"
+  },
+  {
+    "base_currency": "GBP",
+    "quote_currency": "USD",
+    "close_time": "2025-03-26T23:59:59Z",
+    "average_bid": "1.25700",
+    "average_ask": "1.25715",
+    "high_bid": "1.26050",
+    "high_ask": "1.26070",
+    "low_bid": "1.25280",
+    "low_ask": "1.25300"
+  }
+]

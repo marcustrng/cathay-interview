@@ -1,0 +1,11 @@
+title: SimpleError
+type: object
+properties:
+  message:
+    type: string
+    description: Any further information
+    minLength: 1
+  key:
+    type: string
+    description: Error summary
+    minLength: 1

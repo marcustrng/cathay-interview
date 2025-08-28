@@ -1,0 +1,7 @@
+{
+  "message": "Could not find acceptable representation",
+  "key": "NOT_ACCEPTABLE_ERROR",
+  "supportedMediaTypes": [
+    "application/json"
+  ]
+}

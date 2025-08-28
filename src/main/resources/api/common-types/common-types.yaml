@@ -1,0 +1,149 @@
+openapi: 3.0.1
+
+info:
+  title: OpenAPI SSDK
+  description: Common items to use in schemas.
+  version: 2.0.4
+
+paths: {}
+
+components:
+  # ------------------------------------------------
+  # Common responses.
+  # ------------------------------------------------
+  responses:
+    400BadRequest:
+      description: If one or more request parameters don't comply with the specification
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/error.yaml'
+          example:
+            $ref: 'examples/bad-request-validation-error.json'
+    401Unauthorized:
+      description: If the authentication credentials provided are invalid
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/error.yaml'
+          example:
+            $ref: 'examples/unauthorized-error.json'
+    403Forbidden:
+      description: If the current user doesn't have sufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/error.yaml'
+          example:
+            $ref: 'examples/forbidden-error.json'
+    404NotFound:
+      description: Not found.
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/error.yaml'
+          example:
+            $ref: 'examples/not-found-error.json'
+    406NotAcceptable:
+      description: Not acceptable.
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/not-acceptable-error.yaml'
+          example:
+            $ref: 'examples/not-acceptable-error.json'
+    409Conflict:
+      description: Conflict.
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/error.yaml'
+          example:
+            $ref: 'examples/conflict-error.json'
+    415UnsupportedMediaType:
+      description: Unsupported media type.
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/error.yaml'
+          example:
+            $ref: 'examples/unsupported-media-type-error.json'
+    422UnprocessableEntity:
+      description: Unprocessable Entity.
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/error.yaml'
+          example:
+            $ref: 'examples/unprocessable-entity-error.json'
+    500InternalServerError:
+      description: If a runtime error occurs while processing the request
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/simple-error.yaml'
+          example:
+            $ref: 'examples/internal-server-error.json'
+    501NotImplemented:
+      description: Not Implemented.
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/simple-error.yaml'
+          example:
+            $ref: 'examples/not-implemented-error.json'
+    502BadGateway:
+      description: Bad Gateway.
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/error.yaml'
+          example:
+            $ref: 'examples/bad-gateway-error.json'
+    503ServiceUnavailable:
+      description: Service Unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/service-unavailable-error.yaml'
+          example:
+            $ref: 'examples/service-unavailable-error.json'
+    504GatewayTimeout:
+      description: Gateway timeout.
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/error.yaml'
+          example:
+            $ref: 'examples/gateway-timeout-error.json'
+
+  # ------------------------------------------------
+  # Common examples.
+  # ------------------------------------------------
+  examples:
+    BadRequestExample:
+      $ref: 'examples/bad-request-validation-error.json'
+    UnauthorizedExample:
+      $ref: 'examples/unauthorized-error.json'
+    ForbiddenExample:
+      $ref: 'examples/forbidden-error.json'
+    NotFoundExample:
+      $ref: 'examples/not-found-error.json'
+    NotAcceptableExample:
+      $ref: 'examples/not-acceptable-error.json'
+    ConflictExample:
+      $ref: 'examples/conflict-error.json'
+    UnsupportedMediaTypeExample:
+      $ref: 'examples/unsupported-media-type-error.json'
+    UnprocessableEntityExample:
+      $ref: 'examples/unprocessable-entity-error.json'
+    InternalServerErrorExample:
+      $ref: 'examples/internal-server-error.json'
+    NotImplementedExample:
+      $ref: 'examples/not-implemented-error.json'
+    BadGatewayExample:
+      $ref: 'examples/bad-gateway-error.json'
+    ServiceUnavailableExample:
+      $ref: 'examples/service-unavailable-error.json'
+    GatewayTimeoutExample:
+      $ref: 'examples/gateway-timeout-error.json'

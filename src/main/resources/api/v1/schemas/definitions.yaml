@@ -1,0 +1,83 @@
+components:
+  schemas:
+    ExchangeRate:
+      $ref: exchange-rate.yaml
+    ResponseMeta:
+      $ref: exchange-rates-response.yaml
+    PaginationMeta:
+      $ref: exchange-rates-response.yaml
+    OHLC:
+      $ref: ohlc.yaml
+
+  parameters:
+    BaseCurrency:
+      name: base
+      in: path
+      required: true
+      description: Base currency code (3 letters)
+      schema:
+        type: string
+        pattern: '^[A-Z]{3}$'
+        example: EUR
+    QuoteCurrency:
+      name: quote
+      in: path
+      required: true
+      description: Quote currency code (3 letters)
+      schema:
+        type: string
+        pattern: '^[A-Z]{3}$'
+        example: USD
+    StartDate:
+      name: start_date
+      in: query
+      required: true
+      description: Start date (ISO 8601 format)
+      schema:
+        type: string
+        format: date
+        example: "2025-03-26"
+    EndDate:
+      name: end_date
+      in: query
+      required: true
+      description: End date (ISO 8601 format)
+      schema:
+        type: string
+        format: date
+        example: "2025-04-01"
+    Granularity:
+      name: granularity
+      in: query
+      description: Time granularity for data points
+      schema:
+        type: string
+        enum: [ minute, minute_5, minute_15, minute_30, hour, hour_4, hour_12, day, week, month ]
+        default: day
+    Limit:
+      name: limit
+      in: query
+      description: Maximum number of items to return
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 100
+    Offset:
+      name: offset
+      in: query
+      description: Number of items to skip
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+  responses:
+    200ExchangeRates:
+      description: 123
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExchangeRate'
+          example:
+            $ref: '#/components/schemas/ExchangeRate'

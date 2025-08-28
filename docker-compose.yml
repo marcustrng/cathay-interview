@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # H2 Database Console (for development)
+  cathay-interview-tutqq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cathay-interview
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: development
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    ports:
+      - "8080:8080"
+      - "5005:5005"  # Debug port
+    volumes:
+      - .:/workspace
+      - app_logs_dev:/app/logs
+    networks:
+      - dev-net
+
+volumes:
+  app_logs_dev:
+    driver: local
+
+networks:
+  dev-net:
+    driver: bridge

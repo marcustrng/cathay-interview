@@ -1,0 +1,27 @@
+{
+	"message": "Service Unavailable",
+	"key": "GENERAL_ERROR",
+	"errors": [
+		{
+			"message": "Internal error due to {reason}",
+			"key": "1001",
+			"context": {
+				"reason": "101"
+			}
+		},
+		{
+			"message": "Internal error due to {reason}",
+			"key": "1001",
+			"context": {
+				"reason": "102"
+			}
+		},
+		{
+			"message": "Internal error due to {reason}",
+			"key": "1001",
+			"context": {
+				"reason": "103"
+			}
+		}
+	]
+}

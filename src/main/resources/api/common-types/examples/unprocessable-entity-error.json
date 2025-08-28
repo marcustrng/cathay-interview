@@ -1,0 +1,13 @@
+{
+  "message": "Unprocessable Entity",
+  "key" : "UNPROCESSABLE_ENTITY_ERROR",
+  "errors": [
+    {
+      "message": "Array size is over {max}.",
+      "key": "common.api.shoesize",
+      "context": {
+        "max": "100"
+      }
+    }
+  ]
+}

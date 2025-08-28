@@ -1,0 +1,13 @@
+{
+  "message": "Conflict error",
+  "key" : "CONFLICT_ERROR",
+  "errors": [
+    {
+      "message": "The request could not be completed due to a conflict with the current state of the resource.",
+      "key": "transactions.api.billingstatus.transaction",
+      "context": {
+        "billingStatus": "BILLED"
+      }
+    }
+  ]
+}

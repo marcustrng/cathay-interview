@@ -1,0 +1,13 @@
+{
+  "message": "Access to requested resource denied.",
+  "key" : "UNAUTHORIZED_ERROR",
+  "errors": [
+    {
+      "message": "Resource access denied due to invalid credentials.",
+      "key": "common.api.token",
+      "context": {
+        "accessToken": "expired"
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+type: object
+properties:
+  open:
+    type: string
+    format: decimal
+    example: "1.07500"
+  high:
+    type: string
+    format: decimal
+    example: "1.08020"
+  low:
+    type: string
+    format: decimal
+    example: "1.07322"
+  close:
+    type: string
+    format: decimal
+    example: "1.07764"
+  average:
+    type: string
+    format: decimal
+    example: "1.07764"
+required: [open, high, low, close, average]

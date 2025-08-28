@@ -1,0 +1,10 @@
+{
+	"message": "Bad Gateway",
+	"key" : "GATEWAY_ERROR",
+	"errors": [
+		{
+			"message": "Internal error calling API provider",
+			"key": "common.api.providerInternalError"
+		}
+	]
+}
