@@ -1,6 +1,6 @@
 package com.cathay.inteview.tutqq.service;
 
-import com.cathay.interview.tutqq.model.ExchangeRateResponse;
+import com.cathay.interview.tutqq.model.GetExchangeRates200Response;
 import com.cathay.inteview.tutqq.exception.CurrencyPairNotFoundException;
 import com.cathay.inteview.tutqq.exception.DateRangeExceededException;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +12,7 @@ public interface ExchangeRateService {
     /**
      * Retrieves exchange rates for a currency pair within a date range
      */
-    ExchangeRateResponse getExchangeRates(
+    GetExchangeRates200Response getExchangeRates(
             String baseCurrency,
             String quoteCurrency,
             LocalDate startDate,
@@ -30,5 +30,5 @@ public interface ExchangeRateService {
      */
     void validateCurrencyPair(String baseCurrency, String quoteCurrency) throws CurrencyPairNotFoundException;
 
-    void syncExchangeRates(String baseCurrency, String quoteCurrency, String startDate, String endDate);
+    void syncExchangeRates(String baseCurrency, String quoteCurrency, LocalDate startDate, LocalDate endDate);
 }

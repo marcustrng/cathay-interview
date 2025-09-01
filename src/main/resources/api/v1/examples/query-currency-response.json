@@ -1,0 +1,38 @@
+{
+  "content": [
+    {
+      "code": "USD",
+      "name": "United States Dollar",
+      "numericCode": 840,
+      "minorUnit": 2,
+      "isActive": true,
+      "createdAt": "2025-08-27T15:30:00Z",
+      "updatedAt": "2025-08-27T15:45:00Z"
+    },
+    {
+      "code": "EUR",
+      "name": "Euro",
+      "numericCode": 978,
+      "minorUnit": 2,
+      "isActive": true,
+      "createdAt": "2025-08-27T15:35:00Z",
+      "updatedAt": "2025-08-27T15:50:00Z"
+    },
+    {
+      "code": "VND",
+      "name": "Vietnamese Đồng",
+      "numericCode": 704,
+      "minorUnit": 0,
+      "isActive": true,
+      "createdAt": "2025-08-27T15:40:00Z",
+      "updatedAt": "2025-08-27T15:55:00Z"
+    }
+  ],
+  "pagination": {
+    "limit": 3,
+    "offset": 0,
+    "has_more": true,
+    "next_url": "/client-api/v1/currencies?limit=3&offset=3",
+    "prev_url": null
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "message": "Too many requests. Please try again later.",
+  "key": "TOO_MANY_REQUESTS",
+  "errors": [
+    {
+      "message": "Resource access denied due to an exceeded request quota of {quota}.",
+      "key": "common.api.quota",
+      "context": {
+        "quota": "100"
+      }
+    }
+  ]
+}

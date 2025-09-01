@@ -1,0 +1,9 @@
+{
+  "code": "USD",
+  "name": "United States Dollar",
+  "numericCode": 840,
+  "minorUnit": 2,
+  "isActive": true,
+  "createdAt": "2025-08-27T15:30:00Z",
+  "updatedAt": "2025-08-27T15:45:00Z"
+}

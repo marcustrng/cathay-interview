@@ -1,0 +1,5 @@
+type: apiKey
+in: header
+name: X-API-Key
+description: |
+  API key for authentication. Get your API key from the developer dashboard.

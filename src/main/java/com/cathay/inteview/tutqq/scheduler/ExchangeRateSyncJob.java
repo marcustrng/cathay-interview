@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 @Component
 @RequiredArgsConstructor
@@ -31,10 +30,6 @@ public class ExchangeRateSyncJob implements Job {
             LocalDate endDate = LocalDate.now();
             LocalDate startDate = endDate.minusDays(syncProperties.getDefaultDaysBack());
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            String startDateStr = startDate.format(formatter);
-            String endDateStr = endDate.format(formatter);
-
             // Define currency pairs to sync
             String[][] currencyPairs = {
                     {"EUR", "USD"},
@@ -49,7 +44,7 @@ public class ExchangeRateSyncJob implements Job {
             // Sync each currency pair
             for (String[] pair : currencyPairs) {
                 try {
-                    exchangeRateService.syncExchangeRates(pair[0], pair[1], startDateStr, endDateStr);
+                    exchangeRateService.syncExchangeRates(pair[0], pair[1], endDate, startDate);
 
                     // Add delay between API calls to respect rate limits
                     Thread.sleep(1000);

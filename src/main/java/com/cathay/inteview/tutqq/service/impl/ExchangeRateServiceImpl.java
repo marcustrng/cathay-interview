@@ -1,17 +1,15 @@
 package com.cathay.inteview.tutqq.service.impl;
 
-import com.cathay.interview.tutqq.model.DateRange;
-import com.cathay.interview.tutqq.model.ExchangeRateData;
-import com.cathay.interview.tutqq.model.ExchangeRateResponse;
-import com.cathay.interview.tutqq.model.PaginationInfo;
-import com.cathay.interview.tutqq.model.ResponseMetadata;
-import com.cathay.inteview.tutqq.exception.CurrencyPairNotFoundException;
-import com.cathay.inteview.tutqq.exception.DateRangeExceededException;
+import com.cathay.interview.tutqq.model.ExchangeRateDto;
+import com.cathay.interview.tutqq.model.GetExchangeRates200Response;
+import com.cathay.interview.tutqq.model.Pagination;
 import com.cathay.inteview.tutqq.dto.ExchangeRateApiResponse;
 import com.cathay.inteview.tutqq.entity.Currency;
 import com.cathay.inteview.tutqq.entity.CurrencyPair;
 import com.cathay.inteview.tutqq.entity.DataProvider;
 import com.cathay.inteview.tutqq.entity.ExchangeRate;
+import com.cathay.inteview.tutqq.exception.CurrencyPairNotFoundException;
+import com.cathay.inteview.tutqq.exception.DateRangeExceededException;
 import com.cathay.inteview.tutqq.mapper.ExchangeRateMapper;
 import com.cathay.inteview.tutqq.repository.CurrencyPairRepository;
 import com.cathay.inteview.tutqq.repository.DataProviderRepository;
@@ -56,7 +54,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     @Override
     @Cacheable(value = "exchangeRates", key = "#baseCurrency + '_' + #quoteCurrency + '_' + #startDate + '_' + #endDate + '_' + #pageable.pageNumber")
-    public ExchangeRateResponse getExchangeRates(
+    public GetExchangeRates200Response getExchangeRates(
             String baseCurrency,
             String quoteCurrency,
             LocalDate startDate,
@@ -81,18 +79,9 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
                         baseCurrency, quoteCurrency, startInstant, endInstant, pageable);
 
         // Map to DTOs
-        List<ExchangeRateData> exchangeRateDataList = exchangeRateMapper
-                .toDtoList(exchangeRatesPage.getContent());
+        List<ExchangeRateDto> exchangeRateDataList = exchangeRateMapper.toDtoList(exchangeRatesPage.getContent());
 
-        // Build response
-        var metadata = new ResponseMetadata(
-                (int) exchangeRatesPage.getTotalElements(),
-                exchangeRateDataList.size(),
-                ResponseMetadata.GranularityEnum.DAILY,
-                new DateRange(startDate, endDate)
-        );
-
-        var pagination = new PaginationInfo(
+        var pagination = new Pagination(
                 pageable.getPageSize(),
                 (int) pageable.getOffset(),
                 exchangeRatesPage.hasNext()
@@ -112,7 +101,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
         logger.debug("Successfully fetched {} exchange rates", exchangeRateDataList.size());
 
-        return new ExchangeRateResponse(exchangeRateDataList, metadata, pagination);
+        return new GetExchangeRates200Response().data(exchangeRateDataList).pagination(pagination);
     }
 
     @Override
@@ -151,7 +140,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     }
 
     @Override
-    public void syncExchangeRates(String baseCurrency, String quoteCurrency, String startDate, String endDate) {
+    public void syncExchangeRates(String baseCurrency, String quoteCurrency, LocalDate startDate, LocalDate endDate) {
         try {
             logger.info("Starting sync for {} to {} from {} to {}", baseCurrency, quoteCurrency, startDate, endDate);
 

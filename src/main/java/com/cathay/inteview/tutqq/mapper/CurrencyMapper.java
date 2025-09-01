@@ -1,8 +1,7 @@
 package com.cathay.inteview.tutqq.mapper;
 
-import com.cathay.interview.tutqq.model.Currency;
-import com.cathay.interview.tutqq.model.CurrencyCreateRequest;
-import com.cathay.interview.tutqq.model.CurrencyUpdateRequest;
+import com.cathay.interview.tutqq.model.CurrencyDto;
+import com.cathay.inteview.tutqq.entity.Currency;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -18,12 +17,12 @@ import java.util.List;
 )
 public interface CurrencyMapper {
 
-    Currency toDto(com.cathay.inteview.tutqq.entity.Currency entity);
+    CurrencyDto toDto(Currency entity);
 
-    List<Currency> toDtoList(List<com.cathay.inteview.tutqq.entity.Currency> entities);
+    List<CurrencyDto> toDtoList(List<Currency> entities);
 
-    com.cathay.inteview.tutqq.entity.Currency toEntity(CurrencyCreateRequest request);
+    Currency toEntity(CurrencyDto request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateEntityFromRequest(CurrencyUpdateRequest request, @MappingTarget com.cathay.inteview.tutqq.entity.Currency entity);
+    void updateEntityFromRequest(CurrencyDto request, @MappingTarget Currency entity);
 }

@@ -1,7 +1,7 @@
 spring:
   application:
     name:
-      TuTQQ
+      cathay::tutqq
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
@@ -37,7 +37,7 @@ spring:
 # Logging Configuration
 logging:
   level:
-    com.example.currencyexchange: INFO
+    com.cathay.interview.tutqq: INFO
     org.quartz: INFO
     org.springframework.web.client: DEBUG
   pattern:
@@ -47,7 +47,7 @@ logging:
 # Custom Application Properties
 app:
   exchange-rate:
-    api:
+    oanda-api:
       base-url: "https://fxds-public-exchange-rates-api.oanda.com/cc-api/currencies"
       timeout: 30000 # 30 seconds
       max-retries: 3

@@ -1,21 +1,19 @@
 package com.cathay.inteview.tutqq.service;
 
-import com.cathay.interview.tutqq.model.Currency;
-import com.cathay.interview.tutqq.model.CurrencyCreateRequest;
-import com.cathay.interview.tutqq.model.CurrencyUpdateRequest;
+import com.cathay.interview.tutqq.model.CurrencyDto;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface CurrencyService {
 
-    List<Currency> getAllCurrencies(Boolean isActive);
+    List<CurrencyDto> getAllCurrencies(Boolean isActive);
 
-    Optional<Currency> getCurrencyByCode(String code);
+    Optional<CurrencyDto> getCurrencyByCode(String code);
 
-    Currency createCurrency(CurrencyCreateRequest currencyCreateRequest);
+    CurrencyDto createCurrency(CurrencyDto currencyCreateRequest);
 
-    Currency updateCurrency(String code, CurrencyUpdateRequest currencyUpdateRequest);
+    CurrencyDto updateCurrency(String code, CurrencyDto currency);
 
     void deleteCurrency(String code);
 }

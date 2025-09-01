@@ -1,7 +1,7 @@
 package com.cathay.inteview.tutqq.mapper;
 
-import com.cathay.interview.tutqq.model.ExchangeRateData;
-import com.cathay.interview.tutqq.model.ExchangeRates;
+import com.cathay.interview.tutqq.model.ExchangeRateDto;
+import com.cathay.interview.tutqq.model.ExchangeRateDtoRates;
 import com.cathay.interview.tutqq.model.OHLC;
 import com.cathay.inteview.tutqq.entity.ExchangeRate;
 import org.mapstruct.Mapper;
@@ -13,7 +13,7 @@ import java.util.List;
 @Mapper(
         componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
-        uses = { DateMapper.class }
+        uses = {DateMapper.class}
 )
 public interface ExchangeRateMapper {
 
@@ -21,15 +21,9 @@ public interface ExchangeRateMapper {
     @Mapping(target = "baseCurrency", source = "currencyPair.baseCurrency.code")
     @Mapping(target = "quoteCurrency", source = "currencyPair.quoteCurrency.code")
     @Mapping(target = "rates", source = ".")
-    ExchangeRateData toDto(ExchangeRate exchangeRate);
+    ExchangeRateDto toDto(ExchangeRate exchangeRate);
 
-    List<ExchangeRateData> toDtoList(List<ExchangeRate> exchangeRates);
-
-//    @Mapping(target = "bid", source = ".")
-//    @Mapping(target = "ask", source = ".")
-//    @Mapping(target = "mid", source = "midRate")
-//    @Mapping(target = "spread", source = "spread")
-//    ExchangeRates toExchangeRatesDto(ExchangeRate exchangeRate);
+    List<ExchangeRateDto> toDtoList(List<ExchangeRate> exchangeRates);
 
     @Mapping(target = "open", source = "bidOpen")
     @Mapping(target = "high", source = "bidHigh")
@@ -45,14 +39,14 @@ public interface ExchangeRateMapper {
     @Mapping(target = "average", source = "askAverage")
     OHLC toAskOHLC(ExchangeRate exchangeRate);
 
-    default ExchangeRates toExchangeRatesDto(ExchangeRate source) {
+    default ExchangeRateDtoRates toExchangeRatesDto(ExchangeRate source) {
         if (source == null) return null;
 
-        return new ExchangeRates(
+        return new ExchangeRateDtoRates(
                 toBidOHLC(source),
                 toAskOHLC(source),
-                source.getMidRate().toString(),
-                source.getSpread().toString()
+                source.getMidRate(),
+                source.getSpread()
         );
     }
 }

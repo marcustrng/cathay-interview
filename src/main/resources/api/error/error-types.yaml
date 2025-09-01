@@ -1,9 +1,9 @@
 openapi: 3.0.1
 
 info:
-  title: OpenAPI SSDK
-  description: Common items to use in schemas.
-  version: 2.0.4
+  title: OpenAPI Common Error
+  description: OpenAPI Common Error.
+  version: 1.0.0
 
 paths: {}
 
@@ -49,7 +49,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: 'schemas/not-acceptable-error.yaml'
+            $ref: 'schemas/error.yaml'
           example:
             $ref: 'examples/not-acceptable-error.json'
     409Conflict:
@@ -76,6 +76,14 @@ components:
             $ref: 'schemas/error.yaml'
           example:
             $ref: 'examples/unprocessable-entity-error.json'
+    429TooManyRequests:
+      description: Too Many Requests
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/error.yaml'
+          example:
+            $ref: 'examples/too-many-request-error.json'
     500InternalServerError:
       description: If a runtime error occurs while processing the request
       content:
@@ -105,7 +113,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: 'schemas/service-unavailable-error.yaml'
+            $ref: 'schemas/error.yaml'
           example:
             $ref: 'examples/service-unavailable-error.json'
     504GatewayTimeout:
@@ -137,6 +145,8 @@ components:
       $ref: 'examples/unsupported-media-type-error.json'
     UnprocessableEntityExample:
       $ref: 'examples/unprocessable-entity-error.json'
+    TooManyRequests:
+      $ref: 'examples/too-many-request-error.json'
     InternalServerErrorExample:
       $ref: 'examples/internal-server-error.json'
     NotImplementedExample:

@@ -1,0 +1,163 @@
+openapi: 3.0.3
+info:
+  title: Currency Exchange Rate API
+  description: API for managing and retrieving currency exchange rates.
+  version: '1.0.0'
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: currencies
+    description: Operations related to currency management
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /client-api/v1/currencies:
+    get:
+      tags: [currencies]
+      summary: List all currencies
+      description: |
+        Returns a paginated list of available currencies.  
+        Supports internationalized responses based on the `Accept-Language` header.
+      operationId: listCurrencies
+      parameters:
+        - $ref: '#/components/parameters/isActive'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/sort'
+      responses:
+        '200':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/200CurrencyList'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+    post:
+      tags: [currencies]
+      summary: Create a new currency
+      operationId: createCurrency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'v1/schemas/definitions.yaml#/components/schemas/Currency'
+      responses:
+        '201':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/201CurrencyCode'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+  /client-api/v1/currencies/{code}:
+    parameters:
+      - $ref: '#/components/parameters/currencyCode'
+    get:
+      tags: [currencies]
+      summary: Get currency by code
+      operationId: getCurrency
+      responses:
+        '200':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/200Currency'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '404':
+          $ref: 'error/error-types.yaml#/components/responses/404NotFound'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+    put:
+      tags: [currencies]
+      summary: Update currency by code
+      operationId: updateCurrency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'v1/schemas/definitions.yaml#/components/schemas/Currency'
+      responses:
+        '200':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/200Currency'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '404':
+          $ref: 'error/error-types.yaml#/components/responses/404NotFound'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+    delete:
+      tags: [currencies]
+      summary: Delete currency by code
+      operationId: deleteCurrency
+      responses:
+        '204':
+          description: Currency deleted successfully
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '404':
+          $ref: 'error/error-types.yaml#/components/responses/404NotFound'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+components:
+  parameters:
+    isActive:
+      name: isActive
+      in: query
+      description: Filter by active status
+      schema:
+        type: boolean
+    page:
+      name: page
+      in: query
+      description: Page number (0-based)
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    size:
+      name: size
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    sort:
+      name: sort
+      in: query
+      description: >
+        Sorting criteria in the format: `property,(asc|desc)`.  
+        Multiple sort criteria are supported.
+      schema:
+        type: array
+        items:
+          type: string
+      style: form
+      explode: false
+    currencyCode:
+      name: code
+      in: path
+      required: true
+      description: 3-letter ISO currency code
+      schema:
+        type: string
+        pattern: '^[A-Z]{3}$'

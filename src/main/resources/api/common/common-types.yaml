@@ -1,0 +1,31 @@
+openapi: 3.0.1
+
+info:
+  title: OpenAPI SSDK
+  description: Common items to use in schemas.
+  version: 2.0.4
+
+paths: {}
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      $ref: 'schemas/api-key-auth.yaml'
+
+  # ------------------------------------------------
+  # Common schemas.
+  # ------------------------------------------------
+  schemas:
+    Pagination:
+      $ref: 'schemas/pagination.yaml'
+    DirectionDefaultAsc:
+      $ref: 'schemas/direction-default-asc.yaml'
+    DirectionDefaultDesc:
+      $ref: 'schemas/direction-default-desc.yaml'
+
+  # ------------------------------------------------
+  # Common examples.
+  # ------------------------------------------------
+  examples:
+    Pagination:
+      $ref: 'examples/pagination.json'

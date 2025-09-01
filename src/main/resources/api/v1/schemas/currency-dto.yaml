@@ -1,0 +1,30 @@
+type: object
+properties:
+  code:
+    type: string
+    pattern: '^[A-Z]{3}$'
+    example: USD
+  name:
+    type: string
+    example: United States Dollar
+  numericCode:
+    type: integer
+    minimum: 1
+    maximum: 999
+    example: 840
+  minorUnit:
+    type: integer
+    default: 2
+    example: 2
+  isActive:
+    type: boolean
+    default: true
+    example: true
+  createdAt:
+    type: string
+    format: date-time
+    example: 2025-08-27T15:30:00Z
+  updatedAt:
+    type: string
+    format: date-time
+    example: 2025-08-27T15:45:00Z

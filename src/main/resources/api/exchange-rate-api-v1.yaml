@@ -1,0 +1,130 @@
+openapi: 3.0.3
+info:
+  title: Currency Exchange Rate API
+  description: API for retrieving and synchronizing currency exchange rates.
+  version: '1.0.0'
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: exchange-rates
+    description: Operations related to currency exchange rates
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /client-api/v1/exchange-rates/{base}/{quote}:
+    parameters:
+      - $ref: '#/components/parameters/baseCurrency'
+      - $ref: '#/components/parameters/quoteCurrency'
+    get:
+      tags: [exchange-rates]
+      summary: Get exchange rates for a currency pair
+      description: |
+        Retrieves historical exchange rate data for a specified currency pair
+        within a given date range.
+      operationId: getExchangeRates
+      parameters:
+        - $ref: '#/components/parameters/startDate'
+        - $ref: '#/components/parameters/endDate'
+      responses:
+        '200':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/200GetExchangeRate'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '429':
+          $ref: 'error/error-types.yaml#/components/responses/429TooManyRequests'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+  /client-api/v1/exchange-rates/sync:
+    post:
+      tags: [exchange-rates]
+      summary: Manually sync exchange rates
+      description: |
+        Trigger a manual synchronization of exchange rates between the given
+        base and quote currencies for the specified date range.
+      operationId: manualSync
+      parameters:
+        - $ref: '#/components/parameters/baseCurrencyQuery'
+        - $ref: '#/components/parameters/quoteCurrencyQuery'
+        - $ref: '#/components/parameters/startDate'
+        - $ref: '#/components/parameters/endDate'
+      responses:
+        '200':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/200SyncExchangeRate'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '429':
+          $ref: 'error/error-types.yaml#/components/responses/429TooManyRequests'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+components:
+  parameters:
+    baseCurrency:
+      name: base
+      in: path
+      required: true
+      description: Base currency code (ISO 4217)
+      schema:
+        type: string
+        pattern: '^[A-Z]{3}$'
+        example: EUR
+
+    quoteCurrency:
+      name: quote
+      in: path
+      required: true
+      description: Quote currency code (ISO 4217)
+      schema:
+        type: string
+        pattern: '^[A-Z]{3}$'
+        example: USD
+
+    baseCurrencyQuery:
+      name: baseCurrency
+      in: query
+      required: true
+      description: Base currency code (ISO 4217)
+      schema:
+        type: string
+        pattern: '^[A-Z]{3}$'
+        example: USD
+
+    quoteCurrencyQuery:
+      name: quoteCurrency
+      in: query
+      required: true
+      description: Quote currency code (ISO 4217)
+      schema:
+        type: string
+        pattern: '^[A-Z]{3}$'
+        example: TWD
+
+    startDate:
+      name: startDate
+      in: query
+      required: true
+      description: Start date in ISO 8601 format (YYYY-MM-DD)
+      schema:
+        type: string
+        format: date
+        example: '2025-03-26'
+
+    endDate:
+      name: endDate
+      in: query
+      required: true
+      description: End date in ISO 8601 format (YYYY-MM-DD)
+      schema:
+        type: string
+        format: date
+        example: '2025-04-01'

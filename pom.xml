@@ -217,11 +217,12 @@
                 <version>7.8.0</version>
                 <executions>
                     <execution>
+                        <id>currency-api</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.basedir}/src/main/resources/api/currency-exchange-api-v1.yaml</inputSpec>
+                            <inputSpec>${project.basedir}/src/main/resources/api/currency-api-v1.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <apiPackage>com.cathay.interview.tutqq.api</apiPackage>
                             <modelPackage>com.cathay.interview.tutqq.model</modelPackage>
@@ -231,6 +232,27 @@
                                 <useSpringBoot3>true</useSpringBoot3>
                                 <apiNameSuffix>Api</apiNameSuffix>
                                 <skipDefaultInterface>true</skipDefaultInterface>
+                                <useTags>true</useTags>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>exchange-rate-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/api/exchange-rate-api-v1.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>com.cathay.interview.tutqq.api</apiPackage>
+                            <modelPackage>com.cathay.interview.tutqq.model</modelPackage>
+
+                            <configOptions>
+                                <interfaceOnly>true</interfaceOnly>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <apiNameSuffix>Api</apiNameSuffix>
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                                <useTags>true</useTags>
                             </configOptions>
                         </configuration>
                     </execution>

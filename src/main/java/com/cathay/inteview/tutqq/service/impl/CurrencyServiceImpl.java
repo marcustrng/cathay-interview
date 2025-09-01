@@ -1,8 +1,6 @@
 package com.cathay.inteview.tutqq.service.impl;
 
-import com.cathay.interview.tutqq.model.Currency;
-import com.cathay.interview.tutqq.model.CurrencyCreateRequest;
-import com.cathay.interview.tutqq.model.CurrencyUpdateRequest;
+import com.cathay.interview.tutqq.model.CurrencyDto;
 import com.cathay.inteview.tutqq.mapper.CurrencyMapper;
 import com.cathay.inteview.tutqq.repository.CurrencyRepository;
 import com.cathay.inteview.tutqq.service.CurrencyService;
@@ -21,44 +19,31 @@ public class CurrencyServiceImpl implements CurrencyService {
     private final CurrencyMapper currencyMapper;
 
     @Override
-    public List<Currency> getAllCurrencies(Boolean isActive) {
+    public List<CurrencyDto> getAllCurrencies(Boolean isActive) {
         return currencyMapper.toDtoList((isActive == null)
                 ? currencyRepository.findAll()
                 : currencyRepository.findByIsActive(isActive));
     }
 
     @Override
-    public Optional<Currency> getCurrencyByCode(String code) {
+    public Optional<CurrencyDto> getCurrencyByCode(String code) {
         return currencyRepository.findById(code)
                 .map(currencyMapper::toDto);
     }
 
     @Override
-    public Currency createCurrency(CurrencyCreateRequest currency) {
-        if (currencyRepository.existsById(currency.getCode())) {
-            throw new IllegalArgumentException("Currency with code " + currency.getCode() + " already exists");
+    public CurrencyDto createCurrency(CurrencyDto currencyDto) {
+        if (currencyRepository.existsById(currencyDto.getCode())) {
+            throw new IllegalArgumentException("Currency with code " + currencyDto.getCode() + " already exists");
         }
-        return currencyMapper.toDto(currencyRepository.save(currencyMapper.toEntity(currency)));
+        return currencyMapper.toDto(currencyRepository.save(currencyMapper.toEntity(currencyDto)));
     }
 
     @Override
-    public Currency updateCurrency(String code, CurrencyUpdateRequest updatedCurrency) {
+    public CurrencyDto updateCurrency(String code, CurrencyDto updatedCurrency) {
         return currencyRepository.findById(code)
                 .map(existing -> {
-                    existing.setName(updatedCurrency.getName());
-
-                    if (updatedCurrency.getNumericCode() != null) {
-                        existing.setNumericCode(updatedCurrency.getNumericCode().shortValue());
-                    }
-
-                    if (updatedCurrency.getMinorUnit() != null) {
-                        existing.setMinorUnit(updatedCurrency.getMinorUnit().shortValue());
-                    }
-
-                    if (updatedCurrency.getIsActive() != null) {
-                        existing.setIsActive(updatedCurrency.getIsActive());
-                    }
-
+                    currencyMapper.updateEntityFromRequest(updatedCurrency, existing);
                     return currencyRepository.save(existing);
                 })
                 .map(currencyMapper::toDto)

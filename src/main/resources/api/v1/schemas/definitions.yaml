@@ -1,83 +1,130 @@
 components:
   schemas:
+    Currency:
+      $ref: '../schemas/currency-dto.yaml'
     ExchangeRate:
-      $ref: exchange-rate.yaml
-    ResponseMeta:
-      $ref: exchange-rates-response.yaml
-    PaginationMeta:
-      $ref: exchange-rates-response.yaml
+      $ref: '../schemas/exchange-rate-dto.yaml'
     OHLC:
-      $ref: ohlc.yaml
-
-  parameters:
-    BaseCurrency:
-      name: base
-      in: path
-      required: true
-      description: Base currency code (3 letters)
-      schema:
-        type: string
-        pattern: '^[A-Z]{3}$'
-        example: EUR
-    QuoteCurrency:
-      name: quote
-      in: path
-      required: true
-      description: Quote currency code (3 letters)
-      schema:
-        type: string
-        pattern: '^[A-Z]{3}$'
-        example: USD
-    StartDate:
-      name: start_date
-      in: query
-      required: true
-      description: Start date (ISO 8601 format)
-      schema:
-        type: string
-        format: date
-        example: "2025-03-26"
-    EndDate:
-      name: end_date
-      in: query
-      required: true
-      description: End date (ISO 8601 format)
-      schema:
-        type: string
-        format: date
-        example: "2025-04-01"
-    Granularity:
-      name: granularity
-      in: query
-      description: Time granularity for data points
-      schema:
-        type: string
-        enum: [ minute, minute_5, minute_15, minute_30, hour, hour_4, hour_12, day, week, month ]
-        default: day
-    Limit:
-      name: limit
-      in: query
-      description: Maximum number of items to return
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 1000
-        default: 100
-    Offset:
-      name: offset
-      in: query
-      description: Number of items to skip
-      schema:
-        type: integer
-        minimum: 0
-        default: 0
+      $ref: '../schemas/ohlc.yaml'
 
   responses:
-    200ExchangeRates:
-      description: 123
+    200CurrencyList:
+      description: List of supported currencies
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ExchangeRate'
+            type: object
+            properties:
+              content:
+                type: array
+                description: List of currencies for the current page
+                items:
+                  $ref: '#/components/schemas/Currency'
+              pagination:
+                $ref: '../../common/common-types.yaml#/components/schemas/Pagination'
+            required:
+              - content
+              - pagination
           example:
-            $ref: '#/components/schemas/ExchangeRate'
+            $ref: ../examples/query-currency-response.json
+
+    201CurrencyCode:
+      description: If the currency has been created successfully
+      content:
+        application/json:
+          schema:
+            type: string
+            pattern: '^[A-Z]{3}$'
+            example: USD
+          example:
+            $ref: ../examples/create-currency-response.json
+
+    200Currency:
+      description: If the currency is found successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Currency'
+          example:
+            $ref: ../examples/get-currency-by-code-response.json
+
+    200GetExchangeRate:
+      description: If the currency is found successfully
+      headers:
+        X-RateLimit-Limit:
+          description: Request limit per hour
+          schema:
+            type: integer
+            example: 1000
+        X-RateLimit-Remaining:
+          description: Remaining requests in current window
+          schema:
+            type: integer
+            example: 999
+        X-RateLimit-Reset:
+          description: Unix timestamp when rate limit resets
+          schema:
+            type: integer
+            example: 1640995200
+        X-Request-ID:
+          description: Unique request identifier for debugging
+          schema:
+            type: string
+            example: req_123456789
+        Cache-Control:
+          description: Cache control header
+          schema:
+            type: string
+            example: 'public, max-age=300'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                description: List of currencies for the current page
+                items:
+                  $ref: '#/components/schemas/ExchangeRate'
+              pagination:
+                $ref: '../../common/common-types.yaml#/components/schemas/Pagination'
+            example:
+              $ref: ../examples/get-currency-by-code-response.json
+
+    200SyncExchangeRate:
+      description: If the currency is found successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: success
+              message:
+                type: string
+                example: Exchange rates synced successfully
+              pair:
+                type: string
+                example: USD/TWD
+              period:
+                type: string
+                example: 2025-08-01 to 2025-08-26
+
+    200HealthExchangeRateCheck:
+      description: If the currency is found successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: healthy
+              service:
+                type: string
+                example: exchange-rate-sync
+              timestamp:
+                type: string
+                format: date-time
+                example: 2025-08-27T12:00:00
