@@ -13,7 +13,7 @@ import java.util.List;
 @Mapper(
         componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
-        uses = {DateMapper.class}
+        uses = {MapperUtil.class}
 )
 public interface CurrencyMapper {
 

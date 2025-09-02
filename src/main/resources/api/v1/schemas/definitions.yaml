@@ -79,17 +79,12 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              data:
-                type: array
-                description: List of currencies for the current page
-                items:
-                  $ref: '#/components/schemas/ExchangeRate'
-              pagination:
-                $ref: '../../common/common-types.yaml#/components/schemas/Pagination'
+            type: array
+            description: List of exchange rate
+            items:
+              $ref: '#/components/schemas/ExchangeRate'
             example:
-              $ref: ../examples/get-currency-by-code-response.json
+              $ref: ../examples/get-exchange-rate-response.json
 
     200SyncExchangeRate:
       description: If the currency is found successfully

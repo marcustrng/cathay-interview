@@ -1,8 +1,6 @@
 package com.cathay.inteview.tutqq.service.impl;
 
 import com.cathay.interview.tutqq.model.ExchangeRateDto;
-import com.cathay.interview.tutqq.model.GetExchangeRates200Response;
-import com.cathay.interview.tutqq.model.Pagination;
 import com.cathay.inteview.tutqq.dto.ExchangeRateApiResponse;
 import com.cathay.inteview.tutqq.entity.Currency;
 import com.cathay.inteview.tutqq.entity.CurrencyPair;
@@ -16,21 +14,15 @@ import com.cathay.inteview.tutqq.repository.DataProviderRepository;
 import com.cathay.inteview.tutqq.repository.ExchangeRateRepository;
 import com.cathay.inteview.tutqq.service.ExchangeRateService;
 import lombok.RequiredArgsConstructor;
-import org.openapitools.jackson.nullable.JsonNullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
-import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -45,6 +37,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     private static final Logger logger = LoggerFactory.getLogger(ExchangeRateServiceImpl.class);
     private static final int MAX_DATE_RANGE_DAYS = 180; // 6 months
     private static final String API_BASE_URL = "https://fxds-public-exchange-rates-api.oanda.com/cc-api/currencies";
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     private final ExchangeRateRepository exchangeRateRepository;
     private final CurrencyPairRepository currencyPairRepository;
@@ -53,13 +46,12 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     private final RestTemplate restTemplate;
 
     @Override
-    @Cacheable(value = "exchangeRates", key = "#baseCurrency + '_' + #quoteCurrency + '_' + #startDate + '_' + #endDate + '_' + #pageable.pageNumber")
-    public GetExchangeRates200Response getExchangeRates(
+    @Cacheable(value = "exchangeRates", key = "#baseCurrency + '_' + #quoteCurrency + '_' + #startDate + '_' + #endDate")
+    public List<ExchangeRateDto> getExchangeRates(
             String baseCurrency,
             String quoteCurrency,
             LocalDate startDate,
-            LocalDate endDate,
-            Pageable pageable
+            LocalDate endDate
     ) throws CurrencyPairNotFoundException, DateRangeExceededException {
 
         logger.debug("Fetching exchange rates for {}/{} from {} to {}",
@@ -74,35 +66,16 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         var endInstant = endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
         // Fetch data
-        Page<ExchangeRate> exchangeRatesPage = exchangeRateRepository
+        List<ExchangeRate> exchangeRates = exchangeRateRepository
                 .findExchangeRatesByCurrencyPairAndDateRange(
-                        baseCurrency, quoteCurrency, startInstant, endInstant, pageable);
+                        baseCurrency, quoteCurrency, startInstant, endInstant);
 
         // Map to DTOs
-        List<ExchangeRateDto> exchangeRateDataList = exchangeRateMapper.toDtoList(exchangeRatesPage.getContent());
-
-        var pagination = new Pagination()
-                .totalElements((int) exchangeRatesPage.getTotalElements())
-                .totalPages(exchangeRatesPage.getTotalPages())
-                .page(exchangeRatesPage.getNumber() + 1)
-                .size(exchangeRatesPage.getSize()
-        );
-
-        URI nextUrl = exchangeRatesPage.hasNext()
-                ? URI.create(buildNextUrl(baseCurrency, quoteCurrency, startDate, endDate, pageable))
-                : null;
-
-        URI prevUrl = exchangeRatesPage.hasPrevious()
-                ? URI.create(buildPrevUrl(baseCurrency, quoteCurrency, startDate, endDate, pageable))
-                : null;
-
-        pagination.setNextUrl(JsonNullable.of(nextUrl));
-        pagination.setPrevUrl(JsonNullable.of(prevUrl));
-
+        List<ExchangeRateDto> exchangeRateDataList = exchangeRateMapper.toDtoList(exchangeRates);
 
         logger.debug("Successfully fetched {} exchange rates", exchangeRateDataList.size());
 
-        return new GetExchangeRates200Response().data(exchangeRateDataList).pagination(pagination);
+        return exchangeRateDataList;
     }
 
     @Override
@@ -182,72 +155,13 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         }
     }
 
-
-    private String buildNextUrl(String baseCurrency, String quoteCurrency, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        return String.format("/api/v1/exchange-rates/%s/%s?start_date=%s&end_date=%s&limit=%d&offset=%d",
-                baseCurrency, quoteCurrency, startDate, endDate, pageable.getPageSize(), pageable.getOffset() + pageable.getPageSize());
-    }
-
-    private String buildPrevUrl(String baseCurrency, String quoteCurrency, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        long prevOffset = Math.max(0, pageable.getOffset() - pageable.getPageSize());
-        return String.format("/api/v1/exchange-rates/%s/%s?start_date=%s&end_date=%s&limit=%d&offset=%d",
-                baseCurrency, quoteCurrency, startDate, endDate, pageable.getPageSize(), prevOffset);
-    }
-
     private void processExchangeRateData(ExchangeRateApiResponse.ExchangeRateData data,
                                          CurrencyPair currencyPair, DataProvider provider) {
         try {
-            // Parse timestamp
-            LocalDateTime rateTimestamp = LocalDateTime.parse(data.getCloseTime(),
-                    DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-
-            // Check if record already exists
-            Optional<ExchangeRate> existing = exchangeRateRepository
-                    .findByPairAndTimestamp(currencyPair.getId(), rateTimestamp.atZone(ZoneOffset.UTC).toInstant());
-
-            ExchangeRate exchangeRate;
-            if (existing.isPresent()) {
-                exchangeRate = existing.get();
-                exchangeRate.setUpdatedAt(Instant.now());
-                logger.debug("Updating existing rate record for timestamp: {}", rateTimestamp);
-            } else {
-                exchangeRate = new ExchangeRate();
-                exchangeRate.setCurrencyPair(currencyPair);
-                exchangeRate.setProvider(provider);
-                exchangeRate.setRateTimestamp(Instant.now());
-            }
-
-            // Map API response to entity fields
-            BigDecimal bidAvg = new BigDecimal(data.getAverageBid());
-            BigDecimal askAvg = new BigDecimal(data.getAverageAsk());
-            BigDecimal bidHigh = new BigDecimal(data.getHighBid());
-            BigDecimal askHigh = new BigDecimal(data.getHighAsk());
-            BigDecimal bidLow = new BigDecimal(data.getLowBid());
-            BigDecimal askLow = new BigDecimal(data.getLowAsk());
-
-            // Set bid prices (using average as open/close since API doesn't provide OHLC)
-            exchangeRate.setBidOpen(bidAvg);
-            exchangeRate.setBidHigh(bidHigh);
-            exchangeRate.setBidLow(bidLow);
-            exchangeRate.setBidClose(bidAvg);
-            exchangeRate.setBidAverage(bidAvg);
-
-            // Set ask prices
-            exchangeRate.setAskOpen(askAvg);
-            exchangeRate.setAskHigh(askHigh);
-            exchangeRate.setAskLow(askLow);
-            exchangeRate.setAskClose(askAvg);
-            exchangeRate.setAskAverage(askAvg);
-
-            // Calculate derived values
-            BigDecimal midRate = bidAvg.add(askAvg).divide(BigDecimal.valueOf(2));
-            BigDecimal spread = askAvg.subtract(bidAvg);
-
-            exchangeRate.setMidRate(midRate);
-            exchangeRate.setSpread(spread);
+            ExchangeRate entity = exchangeRateMapper.toEntity(data, currencyPair, provider);
 
             // Save the exchange rate
-            exchangeRateRepository.save(exchangeRate);
+            exchangeRateRepository.save(entity);
 
         } catch (Exception e) {
             logger.error("Error processing exchange rate data: {}", e.getMessage(), e);

@@ -1,11 +1,44 @@
-{
-  "base_currency": "EUR",
-  "quote_currency": "USD",
-  "close_time": "2025-03-26T23:59:59Z",
-  "average_bid": "1.07764",
-  "average_ask": "1.07780",
-  "high_bid": "1.08020",
-  "high_ask": "1.08035",
-  "low_bid": "1.07322",
-  "low_ask": "1.07338"
-}
+[
+  {
+    "date": "2025-03-26T23:59:59Z",
+    "base_currency": "EUR",
+    "quote_currency": "USD",
+    "rates": {
+      "bid": {
+        "open": "1.07750",
+        "high": "1.07800",
+        "low": "1.07740",
+        "close": "1.07760"
+      },
+      "ask": {
+        "open": "1.07766",
+        "high": "1.07820",
+        "low": "1.07755",
+        "close": "1.07776"
+      },
+      "mid": "1.07772",
+      "spread": "0.00016"
+    }
+  },
+  {
+    "date": "2025-03-25T23:59:59Z",
+    "base_currency": "EUR",
+    "quote_currency": "USD",
+    "rates": {
+      "bid": {
+        "open": "1.07810",
+        "high": "1.07900",
+        "low": "1.07700",
+        "close": "1.07800"
+      },
+      "ask": {
+        "open": "1.07826",
+        "high": "1.07920",
+        "low": "1.07720",
+        "close": "1.07816"
+      },
+      "mid": "1.07808",
+      "spread": "0.00016"
+    }
+  }
+]

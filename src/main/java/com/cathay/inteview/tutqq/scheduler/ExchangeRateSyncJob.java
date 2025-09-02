@@ -1,64 +1,103 @@
 package com.cathay.inteview.tutqq.scheduler;
 
+import com.cathay.interview.tutqq.model.CurrencyDto;
 import com.cathay.inteview.tutqq.property.ExchangeRateSyncProperties;
+import com.cathay.inteview.tutqq.service.CurrencyService;
 import com.cathay.inteview.tutqq.service.ExchangeRateService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ExchangeRateSyncJob implements Job {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExchangeRateSyncJob.class);
-
     private final ExchangeRateService exchangeRateService;
+    private final CurrencyService currencyService;
     private final ExchangeRateSyncProperties syncProperties;
+
+    private static final int API_CALL_DELAY_MS = 1000;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        logger.info("Starting scheduled exchange rate sync job");
+        log.info("Starting scheduled exchange rate sync job");
 
         try {
-            // Get date range for sync (last 2 days)
             LocalDate endDate = LocalDate.now();
             LocalDate startDate = endDate.minusDays(syncProperties.getDefaultDaysBack());
 
-            // Define currency pairs to sync
-            String[][] currencyPairs = {
-                    {"EUR", "USD"},
-                    {"GBP", "USD"},
-                    {"USD", "JPY"},
-                    {"USD", "CHF"},
-                    {"EUR", "GBP"},
-                    {"AUD", "USD"},
-                    {"USD", "CAD"}
-            };
+            List<String> currencyCodes = fetchActiveCurrencyCodes();
+            List<String[]> currencyPairs = generateCurrencyPairs(currencyCodes);
 
-            // Sync each currency pair
-            for (String[] pair : currencyPairs) {
-                try {
-                    exchangeRateService.syncExchangeRates(pair[0], pair[1], startDate, endDate);
+            syncCurrencyPairs(currencyPairs, startDate, endDate);
 
-                    // Add delay between API calls to respect rate limits
-                    Thread.sleep(1000);
-
-                } catch (Exception e) {
-                    logger.error("Error syncing {}/{}: {}", pair[0], pair[1], e.getMessage());
-                }
-            }
-
-            logger.info("Completed scheduled exchange rate sync job");
+            log.info("Completed scheduled exchange rate sync job");
 
         } catch (Exception e) {
-            logger.error("Error in scheduled sync job: {}", e.getMessage(), e);
-            throw new JobExecutionException(e);
+            String message = "Fatal error during exchange rate sync job execution";
+            log.error("{}: {}", message, e.getMessage(), e);
+            throw new JobExecutionException(message, e);
+        }
+    }
+
+    private List<String> fetchActiveCurrencyCodes() {
+        try {
+            return currencyService.listCurrencies(true, 0, Integer.MAX_VALUE, null)
+                    .getContent()
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .map(CurrencyDto::getCode)
+                    .toList();
+        } catch (Exception e) {
+            String message = "Failed to fetch active currency codes from CurrencyService";
+            log.error("{}: {}", message, e.getMessage(), e);
+            throw new IllegalStateException(message, e);
+        }
+    }
+
+    private List<String[]> generateCurrencyPairs(List<String> currencyCodes) {
+        if (currencyCodes.isEmpty()) {
+            log.warn("No active currencies found, skipping sync job");
+            return List.of();
+        }
+
+        return currencyCodes.stream()
+                .flatMap(base -> currencyCodes.stream()
+                        .filter(quote -> !quote.equals(base))
+                        .map(quote -> new String[]{base, quote}))
+                .toList();
+    }
+
+    private void syncCurrencyPairs(List<String[]> currencyPairs, LocalDate startDate, LocalDate endDate) {
+        for (String[] pair : currencyPairs) {
+            String base = pair[0];
+            String quote = pair[1];
+
+            try {
+                exchangeRateService.syncExchangeRates(base, quote, startDate, endDate);
+                delayBetweenApiCalls();
+            } catch (Exception e) {
+                // Log and continue, don’t break the whole job
+                log.error("Error syncing currency pair {}/{} between {} and {}: {}",
+                        base, quote, startDate, endDate, e.getMessage(), e);
+            }
+        }
+    }
+
+    private void delayBetweenApiCalls() {
+        try {
+            Thread.sleep(API_CALL_DELAY_MS);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            log.warn("Exchange rate sync job interrupted during API delay", ie);
         }
     }
 }

@@ -27,12 +27,11 @@ public interface ExchangeRateRepository extends JpaRepository<ExchangeRate, Long
             AND er.rateTimestamp <= :endDate
             ORDER BY er.rateTimestamp DESC
             """)
-    Page<ExchangeRate> findExchangeRatesByCurrencyPairAndDateRange(
+    List<ExchangeRate> findExchangeRatesByCurrencyPairAndDateRange(
             @Param("baseCurrency") String baseCurrency,
             @Param("quoteCurrency") String quoteCurrency,
             @Param("startDate") Instant startDate,
-            @Param("endDate") Instant endDate,
-            Pageable pageable
+            @Param("endDate") Instant endDate
     );
 
     @Query("""
