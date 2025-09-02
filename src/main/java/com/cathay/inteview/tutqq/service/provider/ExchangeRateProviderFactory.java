@@ -1,6 +1,7 @@
 package com.cathay.inteview.tutqq.service.provider;
 
 import com.cathay.inteview.tutqq.constants.ExchangeRateProviderName;
+import com.cathay.inteview.tutqq.exception.ProviderNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public class ExchangeRateProviderFactory {
     public ExchangeRateProvider getProvider(ExchangeRateProviderName name) {
         ExchangeRateProvider provider = providers.get(name);
         if (provider == null) {
-            throw new IllegalArgumentException("No provider found for: " + name);
+            throw new ProviderNotFoundException("No provider found for: " + name);
         }
         return provider;
     }
