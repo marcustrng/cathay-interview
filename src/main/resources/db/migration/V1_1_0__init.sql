@@ -353,8 +353,7 @@ VALUES ('Central Bank Feed', 'https://api.centralbank.com/rates', 10, 10000),
 
 -- Insert sample API client
 INSERT INTO api_clients (api_key_hash, client_name, tier, rate_limit_per_hour)
-VALUES ('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'Demo Client', 'basic', 1000),
-       ('d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35', 'Premium Client', 'premium', 5000);
+VALUES ('e1faffb3e614e6c2fba74296962386b7c6c8bbd022b3bfb8f7f85e0b96d7c6a5', 'Demo', 'basic', 1000);
 
 -- =====================================================
 -- 9. PERFORMANCE VIEWS

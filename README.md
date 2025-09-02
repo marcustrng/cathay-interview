@@ -78,6 +78,9 @@ docker-compose up -d
 ## 🔧 API Endpoints
 
 ### Currency Management
+
+API key: my-secret-api-key-123
+
 ```http
 GET    /client-api/v1/currencies           # List all currencies (sorted)
 POST   /client-api/v1/currencies           # Create new currency

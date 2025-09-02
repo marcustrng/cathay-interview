@@ -12,57 +12,13 @@ tags:
   - name: exchange-rates
     description: Operations related to currency exchange rates
 
-security:
-  - ApiKeyAuth: []
-
-paths:
-  /client-api/v1/exchange-rates/{base}/{quote}:
-    parameters:
-      - $ref: '#/components/parameters/baseCurrency'
-      - $ref: '#/components/parameters/quoteCurrency'
-    get:
-      tags: [exchange-rates]
-      summary: Get exchange rates for a currency pair
-      description: |
-        Retrieves historical exchange rate data for a specified currency pair
-        within a given date range.
-      operationId: getExchangeRates
-      parameters:
-        - $ref: '#/components/parameters/startDate'
-        - $ref: '#/components/parameters/endDate'
-      responses:
-        '200':
-          $ref: 'v1/schemas/definitions.yaml#/components/responses/200GetExchangeRate'
-        '400':
-          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
-        '401':
-          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
-        '429':
-          $ref: 'error/error-types.yaml#/components/responses/429TooManyRequests'
-        '500':
-          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
-
-  /client-api/v1/exchange-rates/sync:
-    post:
-      tags: [exchange-rates]
-      summary: Manually sync exchange rates
-      description: |
-        Trigger a manual synchronization of exchange rates between the given
-        base and quote currencies for the specified date range.
-      operationId: manualSync
-      responses:
-        '200':
-          $ref: 'v1/schemas/definitions.yaml#/components/responses/200SyncExchangeRate'
-        '400':
-          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
-        '401':
-          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
-        '429':
-          $ref: 'error/error-types.yaml#/components/responses/429TooManyRequests'
-        '500':
-          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
-
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
   parameters:
     baseCurrency:
       name: base
@@ -141,3 +97,57 @@ components:
         minimum: 1
         maximum: 100
         default: 20
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /client-api/v1/exchange-rates/{base}/{quote}:
+    parameters:
+      - $ref: '#/components/parameters/baseCurrency'
+      - $ref: '#/components/parameters/quoteCurrency'
+    get:
+      security:
+        - ApiKeyAuth: []
+      tags: [exchange-rates]
+      summary: Get exchange rates for a currency pair
+      description: |
+        Retrieves historical exchange rate data for a specified currency pair
+        within a given date range.
+      operationId: getExchangeRates
+      parameters:
+        - $ref: '#/components/parameters/startDate'
+        - $ref: '#/components/parameters/endDate'
+      responses:
+        '200':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/200GetExchangeRate'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '429':
+          $ref: 'error/error-types.yaml#/components/responses/429TooManyRequests'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+  /client-api/v1/exchange-rates/sync:
+    post:
+      security:
+        - ApiKeyAuth: []
+      tags: [exchange-rates]
+      summary: Manually sync exchange rates
+      description: |
+        Trigger a manual synchronization of exchange rates between the given
+        base and quote currencies for the specified date range.
+      operationId: manualSync
+      responses:
+        '200':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/200SyncExchangeRate'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '429':
+          $ref: 'error/error-types.yaml#/components/responses/429TooManyRequests'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'

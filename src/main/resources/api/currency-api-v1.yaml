@@ -12,110 +12,13 @@ tags:
   - name: currencies
     description: Operations related to currency management
 
-security:
-  - ApiKeyAuth: []
-
-paths:
-  /client-api/v1/currencies:
-    get:
-      tags: [currencies]
-      summary: List all currencies
-      description: |
-        Returns a paginated list of available currencies.  
-      operationId: listCurrencies
-      parameters:
-        - $ref: '#/components/parameters/isActive'
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/size'
-        - $ref: '#/components/parameters/sort'
-      responses:
-        '200':
-          $ref: 'v1/schemas/definitions.yaml#/components/responses/200CurrencyList'
-        '400':
-          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
-        '401':
-          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
-        '500':
-          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
-
-    post:
-      tags: [currencies]
-      summary: Create a new currency
-      operationId: createCurrency
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: 'v1/schemas/definitions.yaml#/components/schemas/Currency'
-      responses:
-        '201':
-          $ref: 'v1/schemas/definitions.yaml#/components/responses/201CurrencyCode'
-        '400':
-          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
-        '401':
-          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
-        '500':
-          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
-
-  /client-api/v1/currencies/{code}:
-    parameters:
-      - $ref: '#/components/parameters/currencyCode'
-    get:
-      tags: [currencies]
-      summary: Get currency by code
-      operationId: getCurrency
-      responses:
-        '200':
-          $ref: 'v1/schemas/definitions.yaml#/components/responses/200Currency'
-        '400':
-          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
-        '401':
-          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
-        '404':
-          $ref: 'error/error-types.yaml#/components/responses/404NotFound'
-        '500':
-          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
-
-    put:
-      tags: [currencies]
-      summary: Update currency by code
-      operationId: updateCurrency
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: 'v1/schemas/definitions.yaml#/components/schemas/Currency'
-      responses:
-        '200':
-          $ref: 'v1/schemas/definitions.yaml#/components/responses/200Currency'
-        '400':
-          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
-        '401':
-          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
-        '404':
-          $ref: 'error/error-types.yaml#/components/responses/404NotFound'
-        '500':
-          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
-
-    delete:
-      tags: [currencies]
-      summary: Delete currency by code
-      operationId: deleteCurrency
-      responses:
-        '204':
-          description: Currency deleted successfully
-        '400':
-          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
-        '401':
-          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
-        '404':
-          $ref: 'error/error-types.yaml#/components/responses/404NotFound'
-        '500':
-          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
-
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
   parameters:
     isActive:
       name: isActive
@@ -160,3 +63,115 @@ components:
       schema:
         type: string
         pattern: '^[A-Z]{3}$'
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /client-api/v1/currencies:
+    get:
+      security:
+        - ApiKeyAuth: []
+      tags: [currencies]
+      summary: List all currencies
+      description: Returns a paginated list of available currencies.
+      operationId: listCurrencies
+      parameters:
+        - $ref: '#/components/parameters/isActive'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/sort'
+      responses:
+        '200':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/200CurrencyList'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+    post:
+      security:
+        - ApiKeyAuth: []
+      tags: [currencies]
+      summary: Create a new currency
+      operationId: createCurrency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'v1/schemas/definitions.yaml#/components/schemas/Currency'
+      responses:
+        '201':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/201CurrencyCode'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+  /client-api/v1/currencies/{code}:
+    parameters:
+      - $ref: '#/components/parameters/currencyCode'
+    get:
+      security:
+        - ApiKeyAuth: []
+      tags: [currencies]
+      summary: Get currency by code
+      operationId: getCurrency
+      responses:
+        '200':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/200Currency'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '404':
+          $ref: 'error/error-types.yaml#/components/responses/404NotFound'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+    put:
+      security:
+        - ApiKeyAuth: []
+      tags: [currencies]
+      summary: Update currency by code
+      operationId: updateCurrency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'v1/schemas/definitions.yaml#/components/schemas/Currency'
+      responses:
+        '200':
+          $ref: 'v1/schemas/definitions.yaml#/components/responses/200Currency'
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '404':
+          $ref: 'error/error-types.yaml#/components/responses/404NotFound'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
+
+    delete:
+      security:
+        - ApiKeyAuth: []
+      tags: [currencies]
+      summary: Delete currency by code
+      operationId: deleteCurrency
+      responses:
+        '204':
+          description: Currency deleted successfully
+        '400':
+          $ref: 'error/error-types.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'error/error-types.yaml#/components/responses/401Unauthorized'
+        '404':
+          $ref: 'error/error-types.yaml#/components/responses/404NotFound'
+        '500':
+          $ref: 'error/error-types.yaml#/components/responses/500InternalServerError'
