@@ -79,31 +79,24 @@ docker-compose up -d
 
 ### Currency Management
 ```http
-GET    /api/v1/currencies           # List all currencies (sorted)
-POST   /api/v1/currencies           # Create new currency
-GET    /api/v1/currencies/{code}    # Get currency by code
-PUT    /api/v1/currencies/{code}    # Update currency
-DELETE /api/v1/currencies/{code}    # Delete currency
+GET    /client-api/v1/currencies           # List all currencies (sorted)
+POST   /client-api/v1/currencies           # Create new currency
+GET    /client-api/v1/currencies/{code}    # Get currency by code
+PUT    /client-api/v1/currencies/{code}    # Update currency
+DELETE /client-api/v1/currencies/{code}    # Delete currency
 ```
 
 ### Exchange Rates
 ```http
-GET    /api/v1/exchange-rates                    # Current rates info
-POST   /api/v1/exchange-rates/sync               # Manual synchronization
-GET    /api/v1/exchange-rates/{from}/{to}        # Get specific rate
-```
-
-### System Information
-```http
-GET    /api/v1/system/health        # Health check
-GET    /api/v1/system/info          # Application info
+GET    /client-api/v1/exchange-rates                    # Current rates info
+POST   /client-api/v1/exchange-rates/sync               # Manual synchronization
+GET    /client-api/v1/exchange-rates/{from}/{to}        # Get specific rate
 ```
 
 ## 🧪 Testing Strategy
 
 ### Test Coverage
 - **Unit Tests**: 95%+ coverage with Mockito
-- **Integration Tests**: TestContainers for database testing
 - **API Tests**: MockMvc for controller layer
 - **External API**: WireMock for OANDA API simulation
 
@@ -115,8 +108,6 @@ GET    /api/v1/system/info          # Application info
 # Coverage report
 ./mvnw jacoco:report
 
-# Integration tests only
-./mvnw test -Dtest="*IT"
 ```
 
 ## 🐳 Docker Support
@@ -124,24 +115,44 @@ GET    /api/v1/system/info          # Application info
 ### Development Environment
 ```yaml
 # docker-compose.yml
+version: '3.8'
+
 services:
-  app:
-    build: .
+  # H2 Database Console (for development)
+  cathay-interview-tutqq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cathay-interview
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: development
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     ports:
       - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - OANDA_API_KEY=${OANDA_API_KEY}
+      - "5005:5005"  # Debug port
+    volumes:
+      - .:/workspace
+      - app_logs_dev:/app/logs
+    networks:
+      - dev-net
+
+volumes:
+  app_logs_dev:
+    driver: local
+
+networks:
+  dev-net:
+    driver: bridge
 ```
 
 ### Build & Deploy
 ```bash
 # Build image
-docker build -t currency-service:latest .
+docker build -t cathay-inteview:latest .
 
 # Run container
 docker run -p 8080:8080 \
-  -e OANDA_API_KEY=your_key_here \
   currency-service:latest
 ```
 
@@ -152,7 +163,7 @@ docker run -p 8080:8080 \
 spring:
   application:
     name:
-      TuTQQ
+      cathay::tutqq
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
@@ -188,7 +199,7 @@ spring:
 # Logging Configuration
 logging:
   level:
-    com.example.currencyexchange: INFO
+    com.cathay.interview.tutqq: INFO
     org.quartz: INFO
     org.springframework.web.client: DEBUG
   pattern:
@@ -198,12 +209,13 @@ logging:
 # Custom Application Properties
 app:
   exchange-rate:
-    api:
+    oanda-api:
       base-url: "https://fxds-public-exchange-rates-api.oanda.com/cc-api/currencies"
       timeout: 30000 # 30 seconds
       max-retries: 3
     sync:
       enabled: true
+      cron: "0 0 2 * * ?" # Every day at 2 AM
       default-days-back: 1
       batch-size: 100
 ```
