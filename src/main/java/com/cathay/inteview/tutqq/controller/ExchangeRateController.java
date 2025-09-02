@@ -26,16 +26,14 @@ public class ExchangeRateController implements ExchangeRatesApi {
     }
 
     @Override
-    public ResponseEntity<ManualSync200Response> manualSync(String baseCurrency, String quoteCurrency, LocalDate startDate, LocalDate endDate) {
+    public ResponseEntity<ManualSync200Response> manualSync() {
         try {
-            exchangeRateService.syncExchangeRates(baseCurrency, quoteCurrency, startDate, endDate);
+            exchangeRateService.syncExchangeRates();
 
             return ResponseEntity.ok(
                     new ManualSync200Response()
                             .status("success")
                             .message("Exchange rates synced successfully")
-                            .pair(baseCurrency + "/" + quoteCurrency)
-                            .period(startDate + " to " + endDate)
             );
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(

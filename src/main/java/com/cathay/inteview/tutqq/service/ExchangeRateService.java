@@ -20,5 +20,5 @@ public interface ExchangeRateService {
 
     void validateCurrencyPair(String baseCurrency, String quoteCurrency) throws CurrencyPairNotFoundException;
 
-    void syncExchangeRates(String baseCurrency, String quoteCurrency, LocalDate startDate, LocalDate endDate);
+    void syncExchangeRates();
 }

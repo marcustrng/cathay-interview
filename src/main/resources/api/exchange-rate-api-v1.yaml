@@ -50,11 +50,6 @@ paths:
         Trigger a manual synchronization of exchange rates between the given
         base and quote currencies for the specified date range.
       operationId: manualSync
-      parameters:
-        - $ref: '#/components/parameters/baseCurrencyQuery'
-        - $ref: '#/components/parameters/quoteCurrencyQuery'
-        - $ref: '#/components/parameters/startDate'
-        - $ref: '#/components/parameters/endDate'
       responses:
         '200':
           $ref: 'v1/schemas/definitions.yaml#/components/responses/200SyncExchangeRate'

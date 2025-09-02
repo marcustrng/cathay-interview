@@ -1,8 +1,9 @@
 package com.cathay.inteview.tutqq.service.impl;
 
+import com.cathay.interview.tutqq.model.CurrencyDto;
 import com.cathay.interview.tutqq.model.ExchangeRateDto;
-import com.cathay.inteview.tutqq.client.OandaClient;
 import com.cathay.inteview.tutqq.client.dto.ExchangeRateApiResponse;
+import com.cathay.inteview.tutqq.constants.ExchangeRateProviderName;
 import com.cathay.inteview.tutqq.entity.Currency;
 import com.cathay.inteview.tutqq.entity.CurrencyPair;
 import com.cathay.inteview.tutqq.entity.DataProvider;
@@ -10,10 +11,14 @@ import com.cathay.inteview.tutqq.entity.ExchangeRate;
 import com.cathay.inteview.tutqq.exception.CurrencyPairNotFoundException;
 import com.cathay.inteview.tutqq.exception.DateRangeExceededException;
 import com.cathay.inteview.tutqq.mapper.ExchangeRateMapper;
+import com.cathay.inteview.tutqq.property.ExchangeRateSyncProperties;
 import com.cathay.inteview.tutqq.repository.CurrencyPairRepository;
 import com.cathay.inteview.tutqq.repository.DataProviderRepository;
 import com.cathay.inteview.tutqq.repository.ExchangeRateRepository;
+import com.cathay.inteview.tutqq.service.CurrencyService;
 import com.cathay.inteview.tutqq.service.ExchangeRateService;
+import com.cathay.inteview.tutqq.service.provider.ExchangeRateProvider;
+import com.cathay.inteview.tutqq.service.provider.ExchangeRateProviderFactory;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +47,9 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     private final CurrencyPairRepository currencyPairRepository;
     private final ExchangeRateMapper exchangeRateMapper;
     private final DataProviderRepository dataProviderRepository;
-    private final OandaClient oandaClient;
+    private final CurrencyService currencyService;
+    private final ExchangeRateSyncProperties syncProperties;
+    private final ExchangeRateProviderFactory providerFactory;
 
     @Override
     @Cacheable(value = "exchangeRates", key = "#baseCurrency + '_' + #quoteCurrency + '_' + #startDate + '_' + #endDate")
@@ -113,43 +120,70 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     }
 
     @Override
-    public void syncExchangeRates(String baseCurrency, String quoteCurrency, LocalDate startDate, LocalDate endDate) {
+    public void syncExchangeRates() {
         try {
-            logger.info("Starting sync for {} to {} from {} to {}", baseCurrency, quoteCurrency, startDate, endDate);
+            LocalDate endDate = LocalDate.now();
+            LocalDate startDate = endDate.minusDays(syncProperties.getDefaultDaysBack());
 
-            // Call external API
-            ExchangeRateApiResponse response = oandaClient.getExchangeRates(
-                    baseCurrency, quoteCurrency,
-                    startDate.format(DateTimeFormatter.ISO_DATE),
-                    endDate.format(DateTimeFormatter.ISO_DATE)
-            );
+            List<String> currencyCodes = currencyService.listCurrencies(true, 0, Integer.MAX_VALUE, null)
+                    .getContent()
+                    .stream()
+                    .map(CurrencyDto::getCode)
+                    .toList();
 
-            if (response != null && response.getResponse() != null && !response.getResponse().isEmpty()) {
+            List<String[]> currencyPairs = currencyCodes.stream()
+                    .flatMap(base -> currencyCodes.stream()
+                            .filter(quote -> !quote.equals(base))
+                            .map(quote -> new String[]{base, quote}))
+                    .toList();
 
-                // Get or create currency pair
-                CurrencyPair currencyPair = getOrCreateCurrencyPair(baseCurrency, quoteCurrency);
+            currencyPairs.forEach(pair -> {
+                try {
+                    String baseCurrency = pair[0];
+                    String quoteCurrency = pair[1];
 
-                // Get data provider
-                DataProvider provider = getOrCreateDataProvider("Exchange Rates API", oandaClient.getApiBaseUrl());
+                    logger.info("Starting sync for {} to {} from {} to {}", baseCurrency, quoteCurrency, startDate, endDate);
 
-                // Process each rate data point
-                for (ExchangeRateApiResponse.ExchangeRateData data : response.getResponse()) {
-                    processExchangeRateData(data, currencyPair, provider);
+                    // Call external API
+                    ExchangeRateProvider provider = providerFactory.getProvider(ExchangeRateProviderName.OANDA);
+
+                    ExchangeRateApiResponse response = provider.getExchangeRates(
+                            baseCurrency, quoteCurrency,
+                            startDate,
+                            endDate
+                    );
+
+                    if (response != null && response.getResponse() != null && !response.getResponse().isEmpty()) {
+
+                        // Get or create currency pair
+                        CurrencyPair currencyPair = getOrCreateCurrencyPair(baseCurrency, quoteCurrency);
+
+                        // Get data provider
+                        DataProvider dataProvider = getOrCreateDataProvider("Exchange Rates API", provider.getApiBaseUrl());
+
+                        // Process each rate data point
+                        for (ExchangeRateApiResponse.ExchangeRateData data : response.getResponse()) {
+                            processExchangeRateData(data, currencyPair, dataProvider);
+                        }
+
+                        // Update provider's last sync time
+                        dataProvider.setLastSyncAt(Instant.now());
+                        dataProviderRepository.save(dataProvider);
+
+                        logger.info("Successfully synced {} records for {}/{}",
+                                response.getResponse().size(), baseCurrency, quoteCurrency);
+
+                    } else {
+                        logger.warn("No data received from API for {}/{}", baseCurrency, quoteCurrency);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            String.format("Error syncing %s/%s: %s", pair[0], pair[1], e.getMessage()), e
+                    );
                 }
-
-                // Update provider's last sync time
-                provider.setLastSyncAt(Instant.now());
-                dataProviderRepository.save(provider);
-
-                logger.info("Successfully synced {} records for {}/{}",
-                        response.getResponse().size(), baseCurrency, quoteCurrency);
-
-            } else {
-                logger.warn("No data received from API for {}/{}", baseCurrency, quoteCurrency);
-            }
+            });
 
         } catch (Exception e) {
-            logger.error("Error syncing exchange rates for {}/{}: {}", baseCurrency, quoteCurrency, e.getMessage(), e);
             throw new RuntimeException("Failed to sync exchange rates", e);
         }
     }
