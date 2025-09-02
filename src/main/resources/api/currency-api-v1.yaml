@@ -22,7 +22,6 @@ paths:
       summary: List all currencies
       description: |
         Returns a paginated list of available currencies.  
-        Supports internationalized responses based on the `Accept-Language` header.
       operationId: listCurrencies
       parameters:
         - $ref: '#/components/parameters/isActive'

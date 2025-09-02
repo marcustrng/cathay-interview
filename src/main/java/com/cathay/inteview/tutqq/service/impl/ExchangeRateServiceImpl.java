@@ -81,10 +81,11 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         // Map to DTOs
         List<ExchangeRateDto> exchangeRateDataList = exchangeRateMapper.toDtoList(exchangeRatesPage.getContent());
 
-        var pagination = new Pagination(
-                pageable.getPageSize(),
-                (int) pageable.getOffset(),
-                exchangeRatesPage.hasNext()
+        var pagination = new Pagination()
+                .totalElements((int) exchangeRatesPage.getTotalElements())
+                .totalPages(exchangeRatesPage.getTotalPages())
+                .page(exchangeRatesPage.getNumber() + 1)
+                .size(exchangeRatesPage.getSize()
         );
 
         URI nextUrl = exchangeRatesPage.hasNext()

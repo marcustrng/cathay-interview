@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -18,10 +19,11 @@ public class CurrencyController implements CurrenciesApi {
 
     private final CurrencyService currencyService;
 
-
     @Override
-    public ResponseEntity<String> createCurrency(CurrencyDto body) {
-        return null;
+    public ResponseEntity<String> createCurrency(CurrencyDto currencyDto) {
+        String createdCode = currencyService.createCurrency(currencyDto);
+        URI location = URI.create("/currencies/" + createdCode);
+        return ResponseEntity.created(location).body(createdCode);
     }
 
     @Override
@@ -34,16 +36,21 @@ public class CurrencyController implements CurrenciesApi {
     public ResponseEntity<CurrencyDto> getCurrency(String code) {
         return currencyService.getCurrencyByCode(code)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Override
-    public ResponseEntity<ListCurrencies200Response> listCurrencies(Boolean isActive, Integer page, Integer size, List<String> sort) {
-        return null;
+    public ResponseEntity<ListCurrencies200Response> listCurrencies(
+            Boolean isActive,
+            Integer page,
+            Integer size,
+            List<String> sort
+    ) {
+        return ResponseEntity.ok(currencyService.listCurrencies(isActive, page, size, sort));
     }
 
     @Override
-    public ResponseEntity<CurrencyDto> updateCurrency(String code, CurrencyDto currency) {
-        return ResponseEntity.ok(currencyService.updateCurrency(code, currency));
+    public ResponseEntity<CurrencyDto> updateCurrency(String code, CurrencyDto currencyDto) {
+        return ResponseEntity.ok(currencyService.updateCurrency(code, currencyDto));
     }
 }

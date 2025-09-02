@@ -1,30 +1,41 @@
-      type: object
-      required: [limit, offset, has_more]
-      properties:
-        limit:
-          type: integer
-          minimum: 1
-          maximum: 100
-          description: Maximum number of records per page
-          example: 100
-        offset:
-          type: integer
-          minimum: 0
-          description: Number of records skipped
-          example: 0
-        has_more:
-          type: boolean
-          description: Whether more records are available
-          example: false
-        next_url:
-          type: string
-          nullable: true
-          format: uri
-          description: URL for the next page of results
-          example: '/api/v1/exchange-rates/EUR/USD?start_date=2025-03-26&end_date=2025-04-01&limit=2&offset=2'
-        prev_url:
-          type: string
-          nullable: true
-          format: uri
-          description: URL for the previous page of results
-          example: null
+type: object
+description: Generic pagination metadata
+properties:
+  page:
+    type: integer
+    description: Current page number (0-based)
+    example: 0
+  size:
+    type: integer
+    description: Size of the page
+    example: 20
+  totalElements:
+    type: integer
+    description: Total number of elements
+    example: 100
+  totalPages:
+    type: integer
+    description: Total number of pages
+    example: 5
+  first:
+    type: boolean
+    example: true
+  last:
+    type: boolean
+    example: false
+  hasNext:
+    type: boolean
+    example: true
+  hasPrevious:
+    type: boolean
+    example: false
+  nextUrl:
+    type: string
+    nullable: true
+    format: uri
+    example: "http://localhost:8080/api/v1/exchange-rates?page=1&size=20"
+  prevUrl:
+    type: string
+    nullable: true
+    format: uri
+    example: null
