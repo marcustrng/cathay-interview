@@ -1,4 +1,4 @@
-package com.cathay.inteview.tutqq.dto;
+package com.cathay.inteview.tutqq.client.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

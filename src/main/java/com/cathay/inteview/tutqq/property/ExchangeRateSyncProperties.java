@@ -9,7 +9,24 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.exchange-rate.sync")
 public class ExchangeRateSyncProperties {
 
-    private boolean enabled = false;
-    private int defaultDaysBack = 1;
-    private int batchSize = 100;
+    /**
+     * Whether synchronization is enabled.
+     */
+    private boolean enabled;
+
+    /**
+     * Default number of days back to fetch exchange rates.
+     */
+    private int defaultDaysBack;
+
+    /**
+     * Batch size for syncing data.
+     */
+    private int batchSize;
+
+    /**
+     * Cron expression for scheduling the job
+     * Default: run daily at 2 AM
+     */
+    private String cron = "0 0 2 * * ?";
 }

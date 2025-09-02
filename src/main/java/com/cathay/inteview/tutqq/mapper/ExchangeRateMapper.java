@@ -3,7 +3,7 @@ package com.cathay.inteview.tutqq.mapper;
 import com.cathay.interview.tutqq.model.ExchangeRateDto;
 import com.cathay.interview.tutqq.model.ExchangeRateDtoRates;
 import com.cathay.interview.tutqq.model.OHLC;
-import com.cathay.inteview.tutqq.dto.ExchangeRateApiResponse;
+import com.cathay.inteview.tutqq.client.dto.ExchangeRateApiResponse;
 import com.cathay.inteview.tutqq.entity.CurrencyPair;
 import com.cathay.inteview.tutqq.entity.DataProvider;
 import com.cathay.inteview.tutqq.entity.ExchangeRate;

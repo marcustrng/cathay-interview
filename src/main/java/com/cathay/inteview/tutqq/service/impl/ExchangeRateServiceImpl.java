@@ -1,7 +1,8 @@
 package com.cathay.inteview.tutqq.service.impl;
 
 import com.cathay.interview.tutqq.model.ExchangeRateDto;
-import com.cathay.inteview.tutqq.dto.ExchangeRateApiResponse;
+import com.cathay.inteview.tutqq.client.OandaClient;
+import com.cathay.inteview.tutqq.client.dto.ExchangeRateApiResponse;
 import com.cathay.inteview.tutqq.entity.Currency;
 import com.cathay.inteview.tutqq.entity.CurrencyPair;
 import com.cathay.inteview.tutqq.entity.DataProvider;
@@ -19,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -36,14 +36,13 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     private static final Logger logger = LoggerFactory.getLogger(ExchangeRateServiceImpl.class);
     private static final int MAX_DATE_RANGE_DAYS = 180; // 6 months
-    private static final String API_BASE_URL = "https://fxds-public-exchange-rates-api.oanda.com/cc-api/currencies";
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     private final ExchangeRateRepository exchangeRateRepository;
     private final CurrencyPairRepository currencyPairRepository;
     private final ExchangeRateMapper exchangeRateMapper;
     private final DataProviderRepository dataProviderRepository;
-    private final RestTemplate restTemplate;
+    private final OandaClient oandaClient;
 
     @Override
     @Cacheable(value = "exchangeRates", key = "#baseCurrency + '_' + #quoteCurrency + '_' + #startDate + '_' + #endDate")
@@ -118,12 +117,12 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         try {
             logger.info("Starting sync for {} to {} from {} to {}", baseCurrency, quoteCurrency, startDate, endDate);
 
-            // Build API URL
-            String url = String.format("%s?base=%s&quote=%s&data_type=chart&start_date=%s&end_date=%s",
-                    API_BASE_URL, baseCurrency, quoteCurrency, startDate, endDate);
-
             // Call external API
-            ExchangeRateApiResponse response = restTemplate.getForObject(url, ExchangeRateApiResponse.class);
+            ExchangeRateApiResponse response = oandaClient.getExchangeRates(
+                    baseCurrency, quoteCurrency,
+                    startDate.format(DateTimeFormatter.ISO_DATE),
+                    endDate.format(DateTimeFormatter.ISO_DATE)
+            );
 
             if (response != null && response.getResponse() != null && !response.getResponse().isEmpty()) {
 
@@ -131,7 +130,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
                 CurrencyPair currencyPair = getOrCreateCurrencyPair(baseCurrency, quoteCurrency);
 
                 // Get data provider
-                DataProvider provider = getOrCreateDataProvider("Exchange Rates API", API_BASE_URL);
+                DataProvider provider = getOrCreateDataProvider("Exchange Rates API", oandaClient.getApiBaseUrl());
 
                 // Process each rate data point
                 for (ExchangeRateApiResponse.ExchangeRateData data : response.getResponse()) {

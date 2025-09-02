@@ -1,6 +1,6 @@
 package com.cathay.inteview.tutqq.mapper;
 
-import com.cathay.inteview.tutqq.dto.ExchangeRateApiResponse;
+import com.cathay.inteview.tutqq.client.dto.ExchangeRateApiResponse;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;

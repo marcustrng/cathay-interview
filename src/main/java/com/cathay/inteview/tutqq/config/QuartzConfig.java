@@ -3,9 +3,9 @@ package com.cathay.inteview.tutqq.config;
 import com.cathay.inteview.tutqq.property.ExchangeRateSyncProperties;
 import com.cathay.inteview.tutqq.scheduler.ExchangeRateSyncJob;
 import lombok.RequiredArgsConstructor;
+import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
-import org.quartz.SimpleScheduleBuilder;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.springframework.context.annotation.Bean;
@@ -32,15 +32,12 @@ public class QuartzConfig {
             return null; // disable trigger entirely if not enabled
         }
 
-        SimpleScheduleBuilder scheduleBuilder = SimpleScheduleBuilder.simpleSchedule()
-                .withIntervalInHours(1) // Run every hour
-                .repeatForever();
-
         return TriggerBuilder.newTrigger()
                 .forJob(exchangeRateSyncJobDetail())
                 .withIdentity("exchangeRateSyncTrigger")
                 .withDescription("Trigger for exchange rate sync job")
-                .withSchedule(scheduleBuilder)
+                .startNow() // run immediately after app starts
+                .withSchedule(CronScheduleBuilder.cronSchedule(syncProperties.getCron()))
                 .build();
     }
 }

@@ -1,4 +1,4 @@
-package com.cathay.inteview.tutqq.dto;
+package com.cathay.inteview.tutqq.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
