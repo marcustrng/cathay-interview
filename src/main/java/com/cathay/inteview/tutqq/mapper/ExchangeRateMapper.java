@@ -9,18 +9,24 @@ import com.cathay.inteview.tutqq.entity.DataProvider;
 import com.cathay.inteview.tutqq.entity.ExchangeRate;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.IGNORE,
-        uses = {MapperUtil.class}
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface ExchangeRateMapper {
 
-    @Mapping(target = "date", source = "rateTimestamp")
+    @Mapping(target = "date", source = "rateTimestamp",  qualifiedByName = "asOffsetDateTime")
     @Mapping(target = "baseCurrency", source = "currencyPair.baseCurrency.code")
     @Mapping(target = "quoteCurrency", source = "currencyPair.quoteCurrency.code")
     @Mapping(target = "rates", source = ".")
@@ -55,23 +61,69 @@ public interface ExchangeRateMapper {
 
     @Mapping(target = "currencyPair", source = "currencyPair")
     @Mapping(target = "provider", source = "provider")
-    @Mapping(target = "rateTimestamp", expression = "java(MapperUtil.parseTimestamp(data.getCloseTime()))")
-    @Mapping(target = "bidOpen", expression = "java(MapperUtil.toBigDecimal(data.getAverageBid()))")
-    @Mapping(target = "bidHigh", expression = "java(MapperUtil.toBigDecimal(data.getHighBid()))")
-    @Mapping(target = "bidLow", expression = "java(MapperUtil.toBigDecimal(data.getLowBid()))")
-    @Mapping(target = "bidClose", expression = "java(MapperUtil.toBigDecimal(data.getAverageBid()))")
-    @Mapping(target = "bidAverage", expression = "java(MapperUtil.toBigDecimal(data.getAverageBid()))")
-    @Mapping(target = "askOpen", expression = "java(MapperUtil.toBigDecimal(data.getAverageAsk()))")
-    @Mapping(target = "askHigh", expression = "java(MapperUtil.toBigDecimal(data.getHighAsk()))")
-    @Mapping(target = "askLow", expression = "java(MapperUtil.toBigDecimal(data.getLowAsk()))")
-    @Mapping(target = "askClose", expression = "java(MapperUtil.toBigDecimal(data.getAverageAsk()))")
-    @Mapping(target = "askAverage", expression = "java(MapperUtil.toBigDecimal(data.getAverageAsk()))")
-    @Mapping(target = "midRate", expression = "java(MapperUtil.calculateMidRate(data))")
-    @Mapping(target = "spread", expression = "java(MapperUtil.calculateSpread(data))")
+    @Mapping(target = "rateTimestamp", source = "data.closeTime", qualifiedByName = "parseTimestamp")
+    @Mapping(target = "bidOpen", source = "data.averageBid", qualifiedByName = "toBigDecimal")
+    @Mapping(target = "bidHigh", source = "data.highBid", qualifiedByName = "toBigDecimal")
+    @Mapping(target = "bidLow", source = "data.lowBid", qualifiedByName = "toBigDecimal")
+    @Mapping(target = "bidClose", source = "data.averageBid", qualifiedByName = "toBigDecimal")
+    @Mapping(target = "bidAverage", source = "data.averageBid", qualifiedByName = "toBigDecimal")
+    @Mapping(target = "askOpen", source = "data.averageAsk", qualifiedByName = "toBigDecimal")
+    @Mapping(target = "askHigh", source = "data.highAsk", qualifiedByName = "toBigDecimal")
+    @Mapping(target = "askLow", source = "data.lowAsk", qualifiedByName = "toBigDecimal")
+    @Mapping(target = "askClose", source = "data.averageAsk", qualifiedByName = "toBigDecimal")
+    @Mapping(target = "askAverage", source = "data.averageAsk", qualifiedByName = "toBigDecimal")
+    @Mapping(target = "midRate", source = "data", qualifiedByName = "calculateMidRate")
+    @Mapping(target = "spread", source = "data", qualifiedByName = "calculateSpread")
     @Mapping(target = "updatedAt", expression = "java(java.time.Instant.now())")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     ExchangeRate toEntity(ExchangeRateApiResponse.ExchangeRateData data,
                           CurrencyPair currencyPair,
                           DataProvider provider);
+
+    // -------------------------------
+    // Helper Methods
+    // -------------------------------
+
+    @Named("parseTimestamp")
+    default Instant parseTimestamp(String timestamp) {
+        if (timestamp == null || timestamp.isBlank()) return null;
+        return OffsetDateTime.parse(timestamp, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toInstant();
+    }
+
+    @Named("toBigDecimal")
+    default BigDecimal toBigDecimal(String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return new BigDecimal(value);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Invalid decimal value: " + value, ex);
+        }
+    }
+
+    @Named("calculateMidRate")
+    default BigDecimal calculateMidRate(ExchangeRateApiResponse.ExchangeRateData data) {
+        BigDecimal bid = toBigDecimal(data.getAverageBid());
+        BigDecimal ask = toBigDecimal(data.getAverageAsk());
+        if (bid == null || ask == null) return null;
+        return bid.add(ask).divide(BigDecimal.valueOf(2), 8, RoundingMode.HALF_UP);
+    }
+
+    @Named("calculateSpread")
+    default BigDecimal calculateSpread(ExchangeRateApiResponse.ExchangeRateData data) {
+        BigDecimal bid = toBigDecimal(data.getAverageBid());
+        BigDecimal ask = toBigDecimal(data.getAverageAsk());
+        if (bid == null || ask == null) return null;
+        return ask.subtract(bid);
+    }
+
+    @Named("asOffsetDateTime")
+    default OffsetDateTime asOffsetDateTime(Instant instant) {
+        return instant == null ? null : instant.atOffset(ZoneOffset.UTC);
+    }
+
+    @Named("asInstant")
+    default Instant asInstant(OffsetDateTime offsetDateTime) {
+        return offsetDateTime == null ? null : offsetDateTime.toInstant();
+    }
 }

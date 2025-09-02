@@ -124,66 +124,59 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         try {
             LocalDate endDate = LocalDate.now();
             LocalDate startDate = endDate.minusDays(syncProperties.getDefaultDaysBack());
+            logger.debug("Sync date range: {} to {}", startDate, endDate);
 
             List<String> currencyCodes = currencyService.listCurrencies(true, 0, Integer.MAX_VALUE, null)
                     .getContent()
                     .stream()
                     .map(CurrencyDto::getCode)
                     .toList();
+            logger.debug("Fetched currency codes: {}", currencyCodes);
 
             List<String[]> currencyPairs = currencyCodes.stream()
                     .flatMap(base -> currencyCodes.stream()
                             .filter(quote -> !quote.equals(base))
                             .map(quote -> new String[]{base, quote}))
                     .toList();
+            logger.debug("Generated {} currency pairs", currencyPairs.size());
 
-            currencyPairs.forEach(pair -> {
+            for (String[] pair : currencyPairs) {
+                String baseCurrency = pair[0];
+                String quoteCurrency = pair[1];
+                logger.info("Starting sync for {} -> {}", baseCurrency, quoteCurrency);
+
                 try {
-                    String baseCurrency = pair[0];
-                    String quoteCurrency = pair[1];
-
-                    logger.info("Starting sync for {} to {} from {} to {}", baseCurrency, quoteCurrency, startDate, endDate);
-
-                    // Call external API
                     ExchangeRateProvider provider = providerFactory.getProvider(ExchangeRateProviderName.OANDA);
-
                     ExchangeRateApiResponse response = provider.getExchangeRates(
-                            baseCurrency, quoteCurrency,
-                            startDate,
-                            endDate
+                            baseCurrency, quoteCurrency, startDate, endDate
                     );
+                    logger.debug("API response for {}/{}: {}", baseCurrency, quoteCurrency,
+                            response != null ? response.getResponse().size() : "null");
 
                     if (response != null && response.getResponse() != null && !response.getResponse().isEmpty()) {
-
-                        // Get or create currency pair
                         CurrencyPair currencyPair = getOrCreateCurrencyPair(baseCurrency, quoteCurrency);
-
-                        // Get data provider
                         DataProvider dataProvider = getOrCreateDataProvider("Exchange Rates API", provider.getApiBaseUrl());
 
-                        // Process each rate data point
                         for (ExchangeRateApiResponse.ExchangeRateData data : response.getResponse()) {
+                            logger.debug("Processing rate data: {}", data);
                             processExchangeRateData(data, currencyPair, dataProvider);
                         }
 
-                        // Update provider's last sync time
                         dataProvider.setLastSyncAt(Instant.now());
                         dataProviderRepository.save(dataProvider);
-
-                        logger.info("Successfully synced {} records for {}/{}",
-                                response.getResponse().size(), baseCurrency, quoteCurrency);
-
+                        logger.info("Successfully synced {} records for {}/{}", response.getResponse().size(), baseCurrency, quoteCurrency);
                     } else {
                         logger.warn("No data received from API for {}/{}", baseCurrency, quoteCurrency);
                     }
+
                 } catch (Exception e) {
-                    throw new RuntimeException(
-                            String.format("Error syncing %s/%s: %s", pair[0], pair[1], e.getMessage()), e
-                    );
+                    logger.error("Error syncing {}/{}: {}", baseCurrency, quoteCurrency, e.getMessage(), e);
+                    throw new RuntimeException(String.format("Error syncing %s/%s", baseCurrency, quoteCurrency), e);
                 }
-            });
+            }
 
         } catch (Exception e) {
+            logger.error("Failed to sync exchange rates: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to sync exchange rates", e);
         }
     }
