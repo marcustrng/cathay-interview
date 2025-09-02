@@ -44,7 +44,7 @@ public class ExchangeRateSyncJob implements Job {
             // Sync each currency pair
             for (String[] pair : currencyPairs) {
                 try {
-                    exchangeRateService.syncExchangeRates(pair[0], pair[1], endDate, startDate);
+                    exchangeRateService.syncExchangeRates(pair[0], pair[1], startDate, endDate);
 
                     // Add delay between API calls to respect rate limits
                     Thread.sleep(1000);
